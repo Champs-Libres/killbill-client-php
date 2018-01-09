@@ -113,6 +113,74 @@ class Invoice extends InvoiceAttributes
 
         return $response->body;
     }
+    
+    public function charge(
+        $requestedDate = null, 
+        $payInvoice = false,
+        array $pluginProperty = array(),
+        $autoCommit = false,
+        $paymentExternalKey = null,
+        $transactionExternalKey = null,
+        $user = null,
+        $reason = null,
+        $comment = null,
+        $headers = null
+    ) {
+        $queryData = array();
+        
+        if ($requestedDate) {
+            $queryData['requestedDate'] = $requestedDate;
+        }
+        
+        if ($payInvoice) {
+            $queryData['payInvoice'] = 'true';
+        }
+        
+        if (count($pluginProperty) > 0) {
+            $queryData['pluginProperty'] = \implode('\n', $pluginProperty);
+        }
+        
+        if (is_bool((bool) $autoCommit)) {
+            $queryData['autoCommit'] = (bool) $autoCommit ? 'true' : 'false';
+        }
+        
+        if ($paymentExternalKey) {
+            $queryData['paymentExternalKey'] = $paymentExternalKey;
+        }
+        
+        if ($transactionExternalKey) {
+            $queryData['transactionExternalKey'] = $transactionExternalKey;
+        }
+        
+        if ($this->getAccountId() === null) {
+            throw new \RuntimeException("The account id is not defined for this invoice");
+        }
+        
+        $query = $this->makeQuery($queryData);
+        $response = $this->createRequest(
+            Client::PATH_INVOICES.'/charges/'.$this->getAccountId().$query, 
+            $user, 
+            $reason, 
+            $comment,
+            $headers,
+            \json_encode($this->getItems())
+            );
+        
+        try {
+            /** @var Type\InvoiceItemAttributes|null $items */
+            $items = $this->getFromBody(Type\InvoiceItemAttributes::class, $response);
+            $queryInvoice = new Invoice($this->logger);
+            $queryInvoice->setInvoiceId($items[0]->getInvoiceId());
+            $object = $queryInvoice->get(true, $headers);
+            
+        } catch (Exception $e) {
+            $this->logger->error($e);
+
+            return null;
+        }
+
+        return $object;
+    }
 
     /**
      * Returns the base uri for the current object
