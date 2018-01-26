@@ -39,6 +39,38 @@ class Payment extends PaymentAttributes
     {
         return Client::PATH_PAYMENTS.'/'.$this->getPaymentId();
     }
+    
+    public function get($withPluginInfo = null, $withAttempts = null, $headers = null)
+    {
+        $queryData = array();
+        
+        if ($withPluginInfo) {
+            $queryData['withPluginInfo'] = 'true';
+        }
+        
+        if ($withAttempts) {
+            $queryData['withAttempts'] = 'true';
+        }
+        
+        if ($this->getPaymentId() === null) {
+            throw new \LogicException("You should provide the payement id to "
+                . "retrieve payement");
+        }
+
+        $query = $this->makeQuery($queryData);
+        $response = $this->getRequest(Client::PATH_PAYMENTS.'/'.$this->getPaymentId().$query, $headers);
+
+        try {
+            /** @var Payement|null $object */
+            $object = $this->getFromBody(Payment::class, $response);
+        } catch (Exception $e) {
+            $this->logger->error($e);
+
+            return null;
+        }
+
+        return $object;
+    }
 
     use CustomFieldTrait;
     use TagTrait;
