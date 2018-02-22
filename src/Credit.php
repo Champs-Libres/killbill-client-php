@@ -41,7 +41,7 @@ class Credit extends Type\CreditAttributes
 
         try {
             /** @var Credit|null $object */
-            $object = $this->getFromResponse(PaymentMethod::class, $response, $headers);
+            $object = $this->getFromResponse(Credit::class, $response, $headers);
         } catch (Exception $e) {
             $this->logger->error($e);
 
