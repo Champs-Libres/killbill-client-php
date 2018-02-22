@@ -87,7 +87,7 @@ class Subscription extends SubscriptionAttributes
         )
     {
         $queryData = array();
-        $queryData['call_completion'] = ($wait ? 'true' : 'false');
+        $queryData['callCompletion'] = ($wait ? 'true' : 'false');
         
         if ($requestedDate !== null) {
             $queryData['requestedDate'] = $requestedDate;
@@ -103,6 +103,10 @@ class Subscription extends SubscriptionAttributes
         
         if ($migrated !== null) {
             $queryData['migrated'] = $migrated ? 'true' : 'false';
+        }
+        
+        if ($bcd !== null) {
+            $queryData['bcd'] = $bcd;
         }
 
         $query = $this->makeQuery($queryData);
