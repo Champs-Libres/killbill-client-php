@@ -27,11 +27,20 @@ class Catalog extends CatalogAttributes
     private $fullCatalog;
 
     /**
-     * @param string[]|null $headers Any additional headers
+     * @param string[]|null $headers        Any additional headers
+     * @param string        $requestedDate  The requested date of the catalog
      */
-    public function initialize($headers = null)
+    public function initialize($headers = null, $requestedDate = null)
     {
-        $response          = $this->getRequest(Client::PATH_CATALOG, $headers);
+        $queryData = array();
+        
+        if ($requestedDate !== null) {
+            $queryData['requestedDate'] = $requestedDate;
+        }
+        
+        $query = $this->makeQuery($queryData);
+        
+        $response          = $this->getRequest(Client::PATH_CATALOG.$query, $headers);
         $this->fullCatalog = json_decode($response->body);
     }
 
