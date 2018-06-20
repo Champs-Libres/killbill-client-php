@@ -60,7 +60,32 @@ class Invoice extends InvoiceAttributes
 
         return $object;
     }
+    
+    public function create($accountId, $targetDate = null, $user = null, $reason = null, $comment = null, $headers = null)
+    {
+        $queryData = array();
+        
+        $queryData['accountId'] = $accountId;
+        
+        if ($targetDate !== NULL) {
+            $queryData['targetDate'] = $targetDate;
+        }
+        
+        $query = $this->makeQuery($queryData);
+        $response = $this->createRequest(CLIENT::PATH_INVOICES.$query, $user, $reason, $comment, $headers);
+        
+        try {
+            /** @var Invoice|null $object */
+            $object = $this->getFromResponse(Invoice::class, $response, $headers);
+        } catch (Exception $e) {
+            $this->logger->error($e);
 
+            return null;
+        }
+
+        return $object;
+    }
+    
     /**
      * Get payments for this invoice
      *
